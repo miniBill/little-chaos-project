@@ -38,8 +38,8 @@ type alias Model =
 
 
 quad : number -> number -> number -> number -> List ( number, number, number )
-quad a b c d =
-    [ ( a, b, d ), ( d, b, c ) ]
+quad pa pb pc pd =
+    [ ( pa, pb, pd ), ( pd, pb, pc ) ]
 
 
 i : Entity coordinates
@@ -109,7 +109,7 @@ n =
         , ( 0, 5 )
         ]
         [ quad 0 11 10 1
-        , [ ( 2, 9, 3 ), ( 3, 9, 8 ) ]
+        , quad 2 9 8 3
         , quad 4 7 6 5
         ]
 
@@ -164,6 +164,48 @@ v =
         ]
 
 
+r : Entity coordinates
+r =
+    extrude
+        [ ( 0, 0 )
+        , ( 2, 0 )
+        , ( 3, 1 )
+        , ( 3, 2 )
+        , ( 2, 3 )
+        , ( 3, 4 )
+        , ( 3, 5 )
+        , ( 2, 5 )
+        , ( 2, 4 )
+        , ( 1, 3 )
+        , ( 1, 5 )
+        , ( 0, 5 )
+        , ( 0, 1 )
+        , ( 0, 0 )
+        , ( 1, 1 )
+        , ( 1, 2 )
+        , ( 2, 2 )
+        , ( 2, 1 )
+        ]
+        [ quad 0 12 17 1
+        , quad 1 17 3 2
+        , [ ( 17, 16, 3 ) ]
+        , quad 12 11 10 14
+        , quad 15 9 4 3
+        , quad 9 8 5 4
+        , quad 8 7 6 5
+        ]
+
+
+a : Entity coordinates
+a =
+    extrude [] []
+
+
+y : Entity coordinates
+y =
+    extrude [] []
+
+
 extrude : List ( Float, Float ) -> List (List ( Int, Int, Int )) -> Entity coordinates
 extrude points indexes =
     let
@@ -187,33 +229,26 @@ extrude points indexes =
                     let
                         ( ( minx, maxx ), ( miny, maxy ) ) =
                             List.foldl
-                                (\( x, y ) ( mx, my ) ->
-                                    ( step x mx, step y my )
+                                (\( x, y_ ) ( mx, my ) ->
+                                    ( step x mx, step y_ my )
                                 )
                                 ( ( headx, headx ), ( heady, heady ) )
                                 tail
                     in
                     ( (minx + maxx) / 2, (miny + maxy) / 2 )
 
-        frontList : List (Point3d Meters coordinates)
-        frontList =
+        ( frontList, backList ) =
             points
-                |> List.map (\( x, y ) -> Point3d.centimeters (x - centerx) -0.5 (centery - y))
-
-        frontArray : Array (Point3d Meters coordinates)
-        frontArray =
-            frontList
-                |> Array.fromList
-
-        backList : List (Point3d Meters coordinates)
-        backList =
-            points
-                |> List.map (\( x, y ) -> Point3d.centimeters (x - centerx) 0.5 (centery - y))
-
-        backArray : Array (Point3d Meters coordinates)
-        backArray =
-            backList
-                |> Array.fromList
+                |> List.map
+                    (\( px, py ) ->
+                        let
+                            toPoint : Float -> Point3d Meters coordinates
+                            toPoint z =
+                                Point3d.centimeters (px - centerx) z (centery - py)
+                        in
+                        ( toPoint -0.5, toPoint 0.5 )
+                    )
+                |> List.unzip
 
         triangularMesh : TriangularMesh (Point3d Meters coordinates)
         triangularMesh =
@@ -221,15 +256,38 @@ extrude points indexes =
                 [ -- Front
                   indexes
                     |> List.concat
-                    |> TriangularMesh.indexed frontArray
+                    |> TriangularMesh.indexed (Array.fromList frontList)
                 , -- Back
                   indexes
                     |> List.concat
-                    |> List.map (\( a, b, c ) -> ( c, b, a ))
-                    |> TriangularMesh.indexed backArray
+                    |> List.map (\( a_, b, c ) -> ( c, b, a_ ))
+                    |> TriangularMesh.indexed (Array.fromList backList)
 
                 -- Side
-                , TriangularMesh.strip (cycle frontList) (cycle backList)
+                , case List.Extra.findIndex ((==) ( 0, 0 )) (List.drop 1 points) of
+                    Nothing ->
+                        TriangularMesh.strip (cycle frontList) (cycle backList)
+
+                    Just splitIndex ->
+                        points
+                            |> List.Extra.splitAt (splitIndex + 1)
+                            |> (\( before, after ) -> [ before, List.drop 1 after ])
+                            |> List.map
+                                (\segment ->
+                                    segment
+                                        |> List.map
+                                            (\( px, py ) ->
+                                                let
+                                                    toPoint : Float -> Point3d Meters coordinates
+                                                    toPoint z =
+                                                        Point3d.centimeters (px - centerx) z (centery - py)
+                                                in
+                                                ( toPoint -0.5, toPoint 0.5 )
+                                            )
+                                        |> List.unzip
+                                        |> (\( front, back ) -> TriangularMesh.strip (cycle front) (cycle back))
+                                )
+                            |> TriangularMesh.combine
                 ]
 
         mesh : Mesh.Uniform coordinates
@@ -294,16 +352,6 @@ wordLength =
 
 words : List (List (Entity coordinates))
 words =
-    let
-        a =
-            s
-
-        y =
-            a
-
-        r =
-            s
-    in
     [ [ i, s ]
     , [ n, e, v, e, r ]
     , [ e, a, s, y ]
