@@ -1,7 +1,7 @@
 module Main exposing (Flags, Model, Msg, main)
 
 import Angle exposing (Angle)
-import Array exposing (Array)
+import Array
 import Browser
 import Browser.Dom
 import Browser.Events
