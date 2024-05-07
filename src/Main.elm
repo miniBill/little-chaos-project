@@ -1,6 +1,6 @@
 module Main exposing (Flags, Model, Msg, main)
 
-import Angle
+import Angle exposing (Angle)
 import Array exposing (Array)
 import Browser
 import Browser.Dom
@@ -12,6 +12,7 @@ import Duration exposing (Duration)
 import Html exposing (Html)
 import Illuminance
 import Length exposing (Meters)
+import List.Extra
 import Pixels exposing (Pixels)
 import Point3d exposing (Point3d)
 import Quantity exposing (Quantity)
@@ -36,6 +37,11 @@ type alias Model =
     }
 
 
+quad : number -> number -> number -> number -> List ( number, number, number )
+quad a b c d =
+    [ ( a, b, d ), ( d, b, c ) ]
+
+
 i : Entity coordinates
 i =
     extrude
@@ -52,12 +58,9 @@ i =
         , ( 1, 1 )
         , ( 0, 1 )
         ]
-        [ ( 0, 11, 1 )
-        , ( 1, 11, 2 )
-        , ( 10, 9, 3 )
-        , ( 3, 9, 4 )
-        , ( 8, 7, 5 )
-        , ( 5, 7, 6 )
+        [ quad 0 11 2 1
+        , quad 10 9 4 3
+        , quad 8 7 6 5
         ]
 
 
@@ -81,29 +84,96 @@ s =
         , ( 0, 3 )
         , ( 0, 1 )
         ]
-        [ ( 0, 15, 1 )
-        , ( 1, 15, 2 )
-        , ( 15, 14, 3 )
-        , ( 3, 14, 13 )
-        , ( 4, 13, 5 )
-        , ( 5, 13, 12 )
-        , ( 5, 11, 6 )
-        , ( 6, 11, 7 )
-        , ( 10, 9, 7 )
-        , ( 7, 9, 8 )
+        [ quad 0 15 2 1
+        , quad 15 14 13 3
+        , quad 4 13 12 5
+        , quad 5 11 7 6
+        , quad 10 9 8 7
         ]
 
 
-extrude : List ( Float, Float ) -> List ( Int, Int, Int ) -> Entity coordinates
+n : Entity coordinates
+n =
+    extrude
+        [ ( 0, 0 )
+        , ( 1, 0 )
+        , ( 1, 1 )
+        , ( 2, 2 )
+        , ( 2, 0 )
+        , ( 3, 0 )
+        , ( 3, 5 )
+        , ( 2, 5 )
+        , ( 2, 4 )
+        , ( 1, 3 )
+        , ( 1, 5 )
+        , ( 0, 5 )
+        ]
+        [ quad 0 11 10 1
+        , [ ( 2, 9, 3 ), ( 3, 9, 8 ) ]
+        , quad 4 7 6 5
+        ]
+
+
+e : Entity coordinates
+e =
+    extrude
+        [ ( 0, 0 )
+        , ( 3, 0 )
+        , ( 3, 1 )
+        , ( 1, 1 )
+        , ( 1, 2 )
+        , ( 3, 2 )
+        , ( 3, 3 )
+        , ( 1, 3 )
+        , ( 1, 4 )
+        , ( 3, 4 )
+        , ( 3, 5 )
+        , ( 0, 5 )
+        , ( 0, 4 )
+        , ( 0, 3 )
+        , ( 0, 2 )
+        , ( 0, 1 )
+        ]
+        [ quad 0 15 2 1
+        , quad 15 14 4 3
+        , quad 14 13 6 5
+        , quad 13 12 8 7
+        , quad 12 11 10 9
+        ]
+
+
+v : Entity coordinates
+v =
+    extrude
+        [ ( 0, 0 )
+        , ( 1, 0 )
+        , ( 1, 4 )
+        , ( 2, 4 )
+        , ( 2, 0 )
+        , ( 3, 0 )
+        , ( 3, 4 )
+        , ( 2, 5 )
+        , ( 1, 5 )
+        , ( 0, 4 )
+        ]
+        [ quad 0 9 2 1
+        , [ ( 9, 8, 2 ) ]
+        , quad 2 8 7 3
+        , [ ( 3, 7, 6 ) ]
+        , quad 4 3 6 5
+        ]
+
+
+extrude : List ( Float, Float ) -> List (List ( Int, Int, Int )) -> Entity coordinates
 extrude points indexes =
     let
         step : comparable -> ( comparable, comparable ) -> ( comparable, comparable )
-        step v (( mn, mx ) as m) =
-            if v < mn then
-                ( v, mx )
+        step val (( mn, mx ) as m) =
+            if val < mn then
+                ( val, mx )
 
-            else if v > mx then
-                ( mn, v )
+            else if val > mx then
+                ( mn, val )
 
             else
                 m
@@ -128,7 +198,7 @@ extrude points indexes =
         frontList : List (Point3d Meters coordinates)
         frontList =
             points
-                |> List.map (\( x, y ) -> Point3d.centimeters (x - centerx) 0.5 (centery - y))
+                |> List.map (\( x, y ) -> Point3d.centimeters (x - centerx) -0.5 (centery - y))
 
         frontArray : Array (Point3d Meters coordinates)
         frontArray =
@@ -138,7 +208,7 @@ extrude points indexes =
         backList : List (Point3d Meters coordinates)
         backList =
             points
-                |> List.map (\( x, y ) -> Point3d.centimeters (x - centerx) -0.5 (centery - y))
+                |> List.map (\( x, y ) -> Point3d.centimeters (x - centerx) 0.5 (centery - y))
 
         backArray : Array (Point3d Meters coordinates)
         backArray =
@@ -150,21 +220,23 @@ extrude points indexes =
             TriangularMesh.combine
                 [ -- Front
                   indexes
+                    |> List.concat
                     |> TriangularMesh.indexed frontArray
                 , -- Back
                   indexes
+                    |> List.concat
                     |> List.map (\( a, b, c ) -> ( c, b, a ))
                     |> TriangularMesh.indexed backArray
 
                 -- Side
-                -- , TriangularMesh.strip (cycle frontList) (cycle backList)
+                , TriangularMesh.strip (cycle frontList) (cycle backList)
                 ]
 
         mesh : Mesh.Uniform coordinates
         mesh =
             Mesh.indexedFacets triangularMesh
+                |> Mesh.cullBackFaces
 
-        -- |> Mesh.cullBackFaces
         shadow : Mesh.Shadow coordinates
         shadow =
             Mesh.shadow mesh
@@ -215,6 +287,29 @@ init _ =
     )
 
 
+wordLength : Duration
+wordLength =
+    Duration.seconds 3
+
+
+words : List (List (Entity coordinates))
+words =
+    let
+        a =
+            s
+
+        y =
+            a
+
+        r =
+            s
+    in
+    [ [ i, s ]
+    , [ n, e, v, e, r ]
+    , [ e, a, s, y ]
+    ]
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -224,25 +319,54 @@ update msg model =
             )
 
         Tick delta ->
-            ( { model | time = Quantity.plus model.time delta }, Cmd.none )
+            ( { model
+                | time =
+                    Quantity.plus model.time delta
+                        |> Quantity.fractionalModBy
+                            (Quantity.multiplyBy (toFloat <| List.length words) wordLength)
+              }
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg
 view model =
     let
+        baseAzimuth : Angle
+        baseAzimuth =
+            model.time
+                |> Quantity.at
+                    (Angle.degrees 180
+                        |> Quantity.per wordLength
+                    )
+
+        index : Int
+        index =
+            Quantity.ratio model.time wordLength
+                |> floor
+                |> modBy (List.length words)
+
+        ( azimuth, letters ) =
+            ( if modBy 2 index == 0 then
+                baseAzimuth
+                    |> Quantity.plus (Angle.degrees 180)
+
+              else
+                baseAzimuth
+                    |> Quantity.plus (Angle.degrees 0)
+            , words
+                |> List.Extra.getAt index
+                |> Maybe.withDefault []
+            )
+
         camera : Camera3d Meters coordinates
         camera =
             Camera3d.perspective
                 { viewpoint =
                     Viewpoint3d.orbitZ
                         { focalPoint = Point3d.origin
-                        , azimuth =
-                            model.time
-                                |> Quantity.at
-                                    (Angle.degrees 180
-                                        |> Quantity.per (Duration.seconds 5)
-                                    )
-                        , distance = Length.centimeters 20
+                        , azimuth = azimuth
+                        , distance = Length.centimeters 40
                         , elevation = Angle.degrees 0
                         }
                 , verticalFieldOfView = Angle.degrees 30
@@ -250,7 +374,7 @@ view model =
     in
     Scene3d.custom
         { dimensions = ( model.width, model.height )
-        , entities = row [ i, s ]
+        , entities = row letters
         , clipDepth = Length.centimeters 3
         , background = Scene3d.backgroundColor Color.black
         , camera = camera
