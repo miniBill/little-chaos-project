@@ -1,0 +1,15 @@
+{
+    "license": "MIT",
+    "devDependencies": {
+        "elm-review": "^2.11.1",
+        "elm-watch": "^2.0.0-beta.3",
+        "uglify-js": "^3.17.4"
+    },
+    "resolutions": {
+        "**/wrap-ansi": "^7.0.0",
+        "**/got": "^11.8.6"
+    },
+    "scripts": {
+        "start": "yarn elm-watch hot"
+    }
+}
