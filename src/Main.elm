@@ -198,12 +198,50 @@ r =
 
 a : Entity coordinates
 a =
-    extrude [] []
+    extrude
+        [ ( 0, 0 )
+        , ( 1, 0 )
+        , ( 2, 0 )
+        , ( 3, 0 )
+        , ( 3, 5 )
+        , ( 2, 5 )
+        , ( 2, 4 )
+        , ( 1, 4 )
+        , ( 1, 5 )
+        , ( 0, 5 )
+        , ( 0, 0 )
+        , ( 1, 1 )
+        , ( 1, 3 )
+        , ( 2, 3 )
+        , ( 2, 1 )
+        ]
+        [ quad 0 9 8 1
+        , quad 1 11 14 2
+        , quad 12 7 6 13
+        , quad 2 5 4 3
+        ]
 
 
 y : Entity coordinates
 y =
-    extrude [] []
+    extrude
+        [ ( 0, 0 )
+        , ( 1, 0 )
+        , ( 1, 2 )
+        , ( 2, 2 )
+        , ( 2, 0 )
+        , ( 3, 0 )
+        , ( 3, 3 )
+        , ( 2, 3 )
+        , ( 2, 5 )
+        , ( 1, 5 )
+        , ( 1, 3 )
+        , ( 0, 3 )
+        ]
+        [ quad 0 11 10 1
+        , quad 2 9 8 3
+        , quad 4 7 6 5
+        ]
 
 
 extrude : List ( Float, Float ) -> List (List ( Int, Int, Int )) -> Entity coordinates
