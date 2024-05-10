@@ -402,9 +402,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Resized width height ->
-            ( { model | width = Pixels.int width, height = Pixels.int height }
-            , Cmd.none
-            )
+            if height * 16 // 9 < width then
+                ( { model
+                    | width = Pixels.int (height * 16 // 9)
+                    , height = Pixels.int height
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( { model
+                    | width = Pixels.int width
+                    , height = Pixels.int (width * 9 // 16)
+                  }
+                , Cmd.none
+                )
 
         Tick delta ->
             ( { model
@@ -460,10 +472,14 @@ view model =
                             mesh
                             (uniforms meshIndex)
                     )
+
+        px : Quantity Int Pixels -> String
+        px quantity =
+            String.fromInt (Pixels.inPixels quantity) ++ "px"
     in
     WebGL.toHtml
-        [ Html.Attributes.style "width" "100vw"
-        , Html.Attributes.style "height" "100vh"
+        [ Html.Attributes.style "width" (px model.width)
+        , Html.Attributes.style "height" (px model.height)
         , Html.Attributes.style "background" "black"
         , Html.Attributes.width <| Pixels.inPixels model.width
         , Html.Attributes.height <| Pixels.inPixels model.height
