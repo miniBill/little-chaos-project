@@ -275,6 +275,10 @@ extrude points indexes =
                     in
                     ( (minx + maxx) / 2, (miny + maxy) / 2 )
 
+        deltaZ : Float
+        deltaZ =
+            0.1
+
         ( frontList, backList ) =
             points
                 |> List.map
@@ -284,7 +288,7 @@ extrude points indexes =
                             toPoint z =
                                 Point3d.centimeters (px - centerx) z (centery - py)
                         in
-                        ( toPoint -0.5, toPoint 0.5 )
+                        ( toPoint -deltaZ, toPoint deltaZ )
                     )
                 |> List.unzip
 
@@ -320,7 +324,7 @@ extrude points indexes =
                                                     toPoint z =
                                                         Point3d.centimeters (px - centerx) z (centery - py)
                                                 in
-                                                ( toPoint -0.5, toPoint 0.5 )
+                                                ( toPoint -deltaZ, toPoint deltaZ )
                                             )
                                         |> List.unzip
                                         |> (\( front, back ) -> TriangularMesh.strip (cycle front) (cycle back))
