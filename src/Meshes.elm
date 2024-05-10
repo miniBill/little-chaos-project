@@ -1,4 +1,4 @@
-module Meshes exposing (..)
+module Meshes exposing (words)
 
 import Array
 import List.Extra

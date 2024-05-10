@@ -1,7 +1,6 @@
 module Main exposing (Flags, Model, Msg, main)
 
 import Angle exposing (Angle)
-import Array
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -16,7 +15,6 @@ import Meshes
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Task
-import TriangularMesh exposing (TriangularMesh)
 import Types exposing (Attributes)
 import WebGL exposing (Entity, Mesh, Shader)
 import WebGL.Settings.DepthTest as DepthTest
