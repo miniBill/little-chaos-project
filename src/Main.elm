@@ -382,7 +382,7 @@ init _ =
 
 wordLength : Duration
 wordLength =
-    Duration.seconds 5
+    Duration.seconds 3
 
 
 words : List (List (Mesh Attributes))
@@ -391,6 +391,11 @@ words =
     , [ n, e, v, e, r ]
     , [ e, a, s, y ]
     ]
+
+
+wordsCount : Int
+wordsCount =
+    List.length words
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -406,7 +411,7 @@ update msg model =
                 | time =
                     Quantity.plus model.time delta
                         |> Quantity.fractionalModBy
-                            (Quantity.multiplyBy (toFloat <| List.length words) wordLength)
+                            (Quantity.multiplyBy (toFloat wordsCount) wordLength)
               }
             , Cmd.none
             )
@@ -415,32 +420,17 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        baseAzimuth : Angle
-        baseAzimuth =
-            model.time
-                |> Quantity.at
-                    (Angle.degrees 180
-                        |> Quantity.per wordLength
-                    )
-
         index : Int
         index =
             Quantity.ratio model.time wordLength
                 |> floor
-                |> modBy (List.length words)
+                |> modBy wordsCount
 
-        ( azimuth, letters ) =
-            ( if modBy 2 index == 0 then
-                baseAzimuth
-                    |> Quantity.plus (Angle.degrees 180)
-
-              else
-                baseAzimuth
-                    |> Quantity.plus (Angle.degrees 0)
-            , words
+        letters : List (Mesh Attributes)
+        letters =
+            words
                 |> List.Extra.getAt index
                 |> Maybe.withDefault []
-            )
 
         uniforms : Int -> Uniforms
         uniforms meshIndex =
@@ -449,34 +439,12 @@ view model =
                     (4 * (toFloat meshIndex - (toFloat letterCount - 1) / 2))
                     0
                     0
-                    |> Matrix4.rotate
-                        (Angle.inRadians azimuth)
-                        (vec3 0 1 0)
             , perspective = perspective
             }
 
         perspective : Mat4
         perspective =
-            let
-                distance : number
-                distance =
-                    10
-            in
-            Matrix4.mul
-                (Matrix4.makePerspective
-                    30
-                    (Quantity.ratio
-                        (Quantity.toFloatQuantity model.width)
-                        (Quantity.toFloatQuantity model.height)
-                    )
-                    0.001
-                    100
-                )
-                (Matrix4.makeLookAt
-                    (vec3 (distance * Angle.cos azimuth) 0 (distance * Angle.sin azimuth))
-                    (vec3 0 0 0)
-                    (vec3 0 1 0)
-                )
+            makePerspective model
 
         letterCount : Int
         letterCount =
@@ -497,10 +465,58 @@ view model =
         [ Html.Attributes.style "width" "100vw"
         , Html.Attributes.style "height" "100vh"
         , Html.Attributes.style "background" "black"
-        , Html.Attributes.width <| 2 * Pixels.inPixels model.width
-        , Html.Attributes.height <| 2 * Pixels.inPixels model.height
+        , Html.Attributes.width <| Pixels.inPixels model.width
+        , Html.Attributes.height <| Pixels.inPixels model.height
         ]
         entities
+
+
+makePerspective : Model -> Mat4
+makePerspective model =
+    let
+        index : Int
+        index =
+            Quantity.ratio model.time wordLength
+                |> floor
+                |> modBy (List.length words)
+
+        distance : number
+        distance =
+            25
+
+        baseAzimuth : Angle
+        baseAzimuth =
+            model.time
+                |> Quantity.at
+                    (Angle.degrees 180
+                        |> Quantity.per wordLength
+                    )
+
+        azimuth : Angle
+        azimuth =
+            if modBy 2 index == 0 then
+                baseAzimuth
+                    |> Quantity.plus (Angle.degrees 0)
+
+            else
+                baseAzimuth
+                    |> Quantity.plus (Angle.degrees 180)
+    in
+    Matrix4.mul
+        (Matrix4.makePerspective
+            30
+            (Quantity.ratio
+                (Quantity.toFloatQuantity model.width)
+                (Quantity.toFloatQuantity model.height)
+            )
+            0.01
+            100
+        )
+        (Matrix4.makeLookAt
+            (vec3 (distance * Angle.cos azimuth) 0 (distance * Angle.sin azimuth))
+            (vec3 0 0 0)
+            (vec3 0 1 0)
+        )
 
 
 vertexShader : Shader Attributes Uniforms Varyings
