@@ -5,25 +5,17 @@ import Array
 import Browser
 import Browser.Dom
 import Browser.Events
-import Camera3d exposing (Camera3d)
-import Color
-import Direction3d
 import Duration exposing (Duration)
 import Html exposing (Html)
-import Illuminance
-import Length exposing (Meters)
+import Html.Attributes
 import List.Extra
+import Math.Matrix4 as Matrix4 exposing (Mat4)
+import Math.Vector3 exposing (Vec3, vec3)
 import Pixels exposing (Pixels)
-import Point3d exposing (Point3d)
 import Quantity exposing (Quantity)
-import Scene3d exposing (Entity)
-import Scene3d.Light as Light
-import Scene3d.Material as Material
-import Scene3d.Mesh as Mesh
 import Task
 import TriangularMesh exposing (TriangularMesh)
-import Vector3d
-import Viewpoint3d
+import WebGL exposing (Entity, Mesh, Shader)
 
 
 type alias Flags =
@@ -42,7 +34,21 @@ quad pa pb pc pd =
     [ ( pa, pb, pd ), ( pd, pb, pc ) ]
 
 
-i : Entity coordinates
+type alias Uniforms =
+    { model : Mat4
+    , perspective : Mat4
+    }
+
+
+type alias Attributes =
+    { position : Vec3 }
+
+
+type alias Varyings =
+    {}
+
+
+i : Mesh Attributes
 i =
     extrude
         [ ( 0, 0 )
@@ -64,7 +70,7 @@ i =
         ]
 
 
-s : Entity coordinates
+s : Mesh Attributes
 s =
     extrude
         [ ( 0, 0 )
@@ -92,7 +98,7 @@ s =
         ]
 
 
-n : Entity coordinates
+n : Mesh Attributes
 n =
     extrude
         [ ( 0, 0 )
@@ -114,7 +120,7 @@ n =
         ]
 
 
-e : Entity coordinates
+e : Mesh Attributes
 e =
     extrude
         [ ( 0, 0 )
@@ -142,7 +148,7 @@ e =
         ]
 
 
-v : Entity coordinates
+v : Mesh Attributes
 v =
     extrude
         [ ( 0, 0 )
@@ -164,7 +170,7 @@ v =
         ]
 
 
-r : Entity coordinates
+r : Mesh Attributes
 r =
     extrude
         [ ( 0, 0 )
@@ -196,7 +202,7 @@ r =
         ]
 
 
-a : Entity coordinates
+a : Mesh Attributes
 a =
     extrude
         [ ( 0, 0 )
@@ -222,7 +228,7 @@ a =
         ]
 
 
-y : Entity coordinates
+y : Mesh Attributes
 y =
     extrude
         [ ( 0, 0 )
@@ -244,7 +250,7 @@ y =
         ]
 
 
-extrude : List ( Float, Float ) -> List (List ( Int, Int, Int )) -> Entity coordinates
+extrude : List ( Float, Float ) -> List (List ( Int, Int, Int )) -> Mesh Attributes
 extrude points indexes =
     let
         step : comparable -> ( comparable, comparable ) -> ( comparable, comparable )
@@ -284,15 +290,16 @@ extrude points indexes =
                 |> List.map
                     (\( px, py ) ->
                         let
-                            toPoint : Float -> Point3d Meters coordinates
-                            toPoint z =
-                                Point3d.centimeters (px - centerx) z (centery - py)
+                            toVertex : Float -> Attributes
+                            toVertex z =
+                                { position = vec3 (px - centerx) (centery - py) z
+                                }
                         in
-                        ( toPoint -deltaZ, toPoint deltaZ )
+                        ( toVertex -deltaZ, toVertex deltaZ )
                     )
                 |> List.unzip
 
-        triangularMesh : TriangularMesh (Point3d Meters coordinates)
+        triangularMesh : TriangularMesh Attributes
         triangularMesh =
             TriangularMesh.combine
                 [ -- Front
@@ -320,38 +327,24 @@ extrude points indexes =
                                         |> List.map
                                             (\( px, py ) ->
                                                 let
-                                                    toPoint : Float -> Point3d Meters coordinates
-                                                    toPoint z =
-                                                        Point3d.centimeters (px - centerx) z (centery - py)
+                                                    toVertex : Float -> Attributes
+                                                    toVertex z =
+                                                        { position = vec3 (px - centerx) (centery - py) z }
                                                 in
-                                                ( toPoint -deltaZ, toPoint deltaZ )
+                                                ( toVertex -deltaZ, toVertex deltaZ )
                                             )
                                         |> List.unzip
                                         |> (\( front, back ) -> TriangularMesh.strip (cycle front) (cycle back))
                                 )
                             |> TriangularMesh.combine
                 ]
-
-        mesh : Mesh.Uniform coordinates
-        mesh =
-            Mesh.indexedFacets triangularMesh
-                |> Mesh.cullBackFaces
-
-        shadow : Mesh.Shadow coordinates
-        shadow =
-            Mesh.shadow mesh
     in
-    Scene3d.meshWithShadow
-        (Material.nonmetal
-            { baseColor = Color.blue
-            , roughness = 0.5
-            }
-        )
-        mesh
-        shadow
+    triangularMesh
+        |> TriangularMesh.faceVertices
+        |> WebGL.triangles
 
 
-cycle : List (Point3d Meters coordinates) -> List (Point3d Meters coordinates)
+cycle : List a -> List a
 cycle input =
     case input of
         [] ->
@@ -389,10 +382,10 @@ init _ =
 
 wordLength : Duration
 wordLength =
-    Duration.seconds 3
+    Duration.seconds 5
 
 
-words : List (List (Entity coordinates))
+words : List (List (Mesh Attributes))
 words =
     [ [ i, s ]
     , [ n, e, v, e, r ]
@@ -449,58 +442,89 @@ view model =
                 |> Maybe.withDefault []
             )
 
-        camera : Camera3d Meters coordinates
-        camera =
-            Camera3d.perspective
-                { viewpoint =
-                    Viewpoint3d.orbitZ
-                        { focalPoint = Point3d.origin
-                        , azimuth = azimuth
-                        , distance = Length.centimeters 40
-                        , elevation = Angle.degrees 0
-                        }
-                , verticalFieldOfView = Angle.degrees 30
-                }
+        uniforms : Int -> Uniforms
+        uniforms meshIndex =
+            { model =
+                Matrix4.makeTranslate3
+                    (4 * (toFloat meshIndex - (toFloat letterCount - 1) / 2))
+                    0
+                    0
+                    |> Matrix4.rotate
+                        (Angle.inRadians azimuth)
+                        (vec3 0 1 0)
+            , perspective = perspective
+            }
+
+        perspective : Mat4
+        perspective =
+            let
+                distance : number
+                distance =
+                    10
+            in
+            Matrix4.mul
+                (Matrix4.makePerspective
+                    30
+                    (Quantity.ratio
+                        (Quantity.toFloatQuantity model.width)
+                        (Quantity.toFloatQuantity model.height)
+                    )
+                    0.001
+                    100
+                )
+                (Matrix4.makeLookAt
+                    (vec3 (distance * Angle.cos azimuth) 0 (distance * Angle.sin azimuth))
+                    (vec3 0 0 0)
+                    (vec3 0 1 0)
+                )
+
+        letterCount : Int
+        letterCount =
+            List.length letters
+
+        entities : List Entity
+        entities =
+            letters
+                |> List.indexedMap
+                    (\meshIndex mesh ->
+                        WebGL.entity vertexShader
+                            fragmentShader
+                            mesh
+                            (uniforms meshIndex)
+                    )
     in
-    Scene3d.custom
-        { dimensions = ( model.width, model.height )
-        , entities = row letters
-        , clipDepth = Length.centimeters 3
-        , background = Scene3d.backgroundColor Color.black
-        , camera = camera
-        , lights =
-            Scene3d.twoLights
-                (Light.directional (Light.castsShadows True)
-                    { chromaticity = Light.sunlight
-                    , intensity = Illuminance.lux 80000
-                    , direction = Direction3d.xyZ (Angle.degrees 30) (Angle.degrees -45)
-                    }
-                )
-                (Light.ambient
-                    { chromaticity = Light.sunlight
-                    , intensity = Illuminance.lux 20000
-                    }
-                )
-        , toneMapping = Scene3d.hableFilmicToneMapping
-        , antialiasing = Scene3d.supersampling 2
-        , exposure = Scene3d.exposureValue 15
-        , whiteBalance = Light.sunlight
+    WebGL.toHtml
+        [ Html.Attributes.style "width" "100vw"
+        , Html.Attributes.style "height" "100vh"
+        , Html.Attributes.style "background" "black"
+        , Html.Attributes.width <| 2 * Pixels.inPixels model.width
+        , Html.Attributes.height <| 2 * Pixels.inPixels model.height
+        ]
+        entities
+
+
+vertexShader : Shader Attributes Uniforms Varyings
+vertexShader =
+    [glsl|
+        attribute vec3 position;
+        uniform mat4 model;
+        uniform mat4 perspective;
+
+        void main () {
+            gl_Position = perspective * model * vec4(position, 1.0);
         }
+    |]
 
 
-row : List (Entity coordinates) -> List (Entity coordinates)
-row entities =
-    let
-        count : Int
-        count =
-            List.length entities
-    in
-    entities
-        |> List.indexedMap
-            (\index entity ->
-                entity
-                    |> Scene3d.translateBy (Vector3d.centimeters (4 * (toFloat index - (toFloat count - 1) / 2)) 0 0)
-            )
+fragmentShader : Shader {} Uniforms Varyings
+fragmentShader =
+    [glsl|
+        precision mediump float;
+
+        void main () {
+            gl_FragColor = vec4(.2,.2,.7,1);
+        }
+    |]
 
 
 subscriptions : Model -> Sub Msg
