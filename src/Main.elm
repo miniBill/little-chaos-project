@@ -67,14 +67,13 @@ init _ =
     )
 
 
-wordDuration : Duration
-wordDuration =
-    Duration.seconds 1
-
-
-wordsCount : Int
-wordsCount =
-    List.length Meshes.words
+wordDurations : List Duration
+wordDurations =
+    [ Duration.seconds 1
+    , Duration.seconds 1
+    , Duration.seconds 1
+    , Duration.seconds 2
+    ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -102,7 +101,7 @@ update msg model =
                 | time =
                     Quantity.plus model.time delta
                         |> Quantity.fractionalModBy
-                            (Quantity.multiplyBy (toFloat wordsCount) wordDuration)
+                            (Quantity.sum wordDurations)
               }
             , Cmd.none
             )
@@ -113,9 +112,7 @@ view model =
     let
         index : Int
         index =
-            Quantity.ratio model.time wordDuration
-                |> floor
-                |> modBy wordsCount
+            getIndex model
 
         letters : List (Mesh Attributes)
         letters =
@@ -174,6 +171,26 @@ view model =
         (background :: entities)
 
 
+getIndex : Model -> Int
+getIndex model =
+    wordDurations
+        |> List.foldl
+            (\duration ( durationAcc, found ) ->
+                let
+                    end : Duration
+                    end =
+                        Quantity.plus durationAcc duration
+                in
+                if end |> Quantity.lessThan model.time then
+                    ( end, found + 1 )
+
+                else
+                    ( end, found )
+            )
+            ( Quantity.zero, 0 )
+        |> Tuple.second
+
+
 backgroundMesh : Mesh { apos : Vec2 }
 backgroundMesh =
     WebGL.triangleFan
@@ -189,31 +206,29 @@ makePerspective model =
     let
         index : Int
         index =
-            Quantity.ratio model.time wordDuration
-                |> floor
-                |> modBy wordsCount
+            getIndex model
 
         distance : number
         distance =
             25
 
-        baseAzimuth : Angle
-        baseAzimuth =
-            model.time
-                |> Quantity.at
-                    (Angle.degrees 180
-                        |> Quantity.per wordDuration
-                    )
-
         azimuth : Angle
         azimuth =
-            if modBy 2 index == 0 then
-                baseAzimuth
-                    |> Quantity.plus (Angle.degrees 0)
-
-            else
-                baseAzimuth
-                    |> Quantity.plus (Angle.degrees 180)
+            model.time
+                |> Quantity.minus
+                    (wordDurations
+                        |> List.take index
+                        |> Quantity.sum
+                    )
+                |> Quantity.at
+                    (Angle.degrees 180
+                        |> Quantity.per
+                            (wordDurations
+                                |> List.drop index
+                                |> List.take 1
+                                |> Quantity.sum
+                            )
+                    )
     in
     Matrix4.mul
         (Matrix4.makePerspective
