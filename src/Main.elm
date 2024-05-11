@@ -273,7 +273,8 @@ fragmentShader =
         // END
 
         void main () {
-            gl_FragColor = vec4(.2,.2,.7,1) * noise(3197. * vpos.xy * vpos.z);
+            vec4 base_color = vec4(.3, .3, .9, 1);
+            gl_FragColor = base_color * mix(1., noise(3197. * vpos.xy * vpos.z), 0.7);
         }
     |]
 
@@ -318,7 +319,13 @@ backgroundFragmentShader =
 
         void main () {
             vec2 npos = 41. * vec2(16, 9) * vpos;
-            gl_FragColor = vec4(.7,.7,.9,1) * (noise(npos) > 0.85 ? 1. : 0.);
+            float dist = length(npos);
+            float alpha = atan(npos.y, npos.x);
+            // dist = k * alpha
+            float spiral_coeff = abs(mod(pow(dist / 0.1, 0.3) - alpha, 0.25 * 3.14)) < 0.5 ? 1. : 0.;
+            float noise_coeff = (noise(npos) > 0.04 * pow(dist, 0.5) ? 1. : 0.) * 1. + 0.;
+            vec4 base_color = vec4(.6, .8, .8, 1);
+            gl_FragColor = base_color * noise_coeff * spiral_coeff;
         }
     |]
 
