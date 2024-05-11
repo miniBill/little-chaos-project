@@ -155,7 +155,7 @@ view model =
                 backgroundVertexShader
                 backgroundFragmentShader
                 backgroundMesh
-                {}
+                { time = Duration.inSeconds model.time }
 
         px : Quantity Int Pixels -> String
         px quantity =
@@ -294,7 +294,7 @@ fragmentShader =
     |]
 
 
-backgroundVertexShader : Shader { apos : Vec2 } {} { vpos : Vec2 }
+backgroundVertexShader : Shader { apos : Vec2 } { time : Float } { vpos : Vec2 }
 backgroundVertexShader =
     [glsl|
         attribute vec2 apos;
@@ -307,11 +307,12 @@ backgroundVertexShader =
     |]
 
 
-backgroundFragmentShader : Shader {} {} { vpos : Vec2 }
+backgroundFragmentShader : Shader {} { time : Float } { vpos : Vec2 }
 backgroundFragmentShader =
     [glsl|
         precision mediump float;
 
+        uniform float time;
         varying vec2 vpos;
 
         // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
@@ -335,7 +336,7 @@ backgroundFragmentShader =
         void main () {
             vec2 npos = 41. * vec2(16, 9) * vpos;
             float dist = length(npos);
-            float alpha = atan(npos.y, npos.x);
+            float alpha = atan(npos.y, npos.x) + time / 1.;
             // dist = k * alpha
             float spiral_coeff = abs(mod(pow(dist / 0.1, 0.3) - alpha, 0.25 * 3.14)) < 0.5 ? 1. : 0.;
             float noise_coeff = (noise(npos) > 0.04 * pow(dist, 0.5) ? 1. : 0.) * 1. + 0.;
