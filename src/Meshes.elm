@@ -11,7 +11,7 @@ import WebGL exposing (Mesh)
 words : List (List (Mesh Attributes))
 words =
     [ [ i, s ]
-    , [ n, e, v, e, r ]
+    , [ e, v, e, r ]
     , [ e, a, s, y ]
     ]
 
@@ -68,28 +68,6 @@ s =
         , quad 4 13 12 5
         , quad 5 11 7 6
         , quad 10 9 8 7
-        ]
-
-
-n : Mesh Attributes
-n =
-    extrude
-        [ ( 0, 0 )
-        , ( 1, 0 )
-        , ( 1, 1 )
-        , ( 2, 2 )
-        , ( 2, 0 )
-        , ( 3, 0 )
-        , ( 3, 5 )
-        , ( 2, 5 )
-        , ( 2, 4 )
-        , ( 1, 3 )
-        , ( 1, 5 )
-        , ( 0, 5 )
-        ]
-        [ quad 0 11 10 1
-        , quad 2 9 8 3
-        , quad 4 7 6 5
         ]
 
 
