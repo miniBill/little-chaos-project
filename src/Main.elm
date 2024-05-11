@@ -69,10 +69,10 @@ init _ =
 
 wordDurations : List Duration
 wordDurations =
-    [ Duration.seconds 1
+    [ Duration.seconds 0.75
+    , Duration.seconds 1.5
+    , Duration.seconds 1.5
     , Duration.seconds 1
-    , Duration.seconds 1
-    , Duration.seconds 2
     ]
 
 
