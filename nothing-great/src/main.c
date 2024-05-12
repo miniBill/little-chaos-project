@@ -48,23 +48,29 @@ void letter_at(int y, int x, letter letter)
 
 letter *char_to_letter(char c)
 {
-#define char_to_letter_l(l, u) \
-    case l:                    \
-        return &u;
     switch (c)
     {
-        char_to_letter_l('a', LETTER_A);
-        char_to_letter_l('e', LETTER_E);
-        char_to_letter_l('g', LETTER_G);
-        char_to_letter_l('h', LETTER_H);
-        char_to_letter_l('i', LETTER_I);
-        char_to_letter_l('n', LETTER_N);
-        char_to_letter_l('o', LETTER_O);
-        char_to_letter_l('r', LETTER_R);
-        char_to_letter_l('t', LETTER_T);
+    case 'a':
+        return &LETTER_A;
+    case 'e':
+        return &LETTER_E;
+    case 'g':
+        return &LETTER_G;
+    case 'h':
+        return &LETTER_H;
+    case 'i':
+        return &LETTER_I;
+    case 'n':
+        return &LETTER_N;
+    case 'o':
+        return &LETTER_O;
+    case 'r':
+        return &LETTER_R;
+    case 't':
+        return &LETTER_T;
+    default:
+        return 0;
     }
-    return 0;
-#undef char_to_letter_l
 }
 
 void write_at(int y, int x, char *string)
@@ -137,7 +143,8 @@ int main()
     {
         current_time = fmod(current_time + 1. / 360, 2);
 
-        write_at(10, 10, "nothing");
+        write_at(rows / 2 - LETTER_HEIGHT, cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2, "nothing");
+        write_at(rows / 2 + 1, cols / 2 - (LETTER_WIDTH + 1) * strlen("great") / 2, "great");
 
         usleep(1000 * 1000 / 60); // Very approximately 60 fps
     }
