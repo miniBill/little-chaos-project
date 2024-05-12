@@ -9,7 +9,7 @@
 
 #define BLACK 0
 
-volatile int rows, cols;
+volatile sig_atomic_t rows, cols;
 
 void measure_screen(void)
 {
