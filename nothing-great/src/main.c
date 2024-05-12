@@ -23,23 +23,12 @@
 volatile int rows, cols;
 float current_time = 0;
 
-struct termios original, changed;
-
 void measure_screen()
 {
     struct winsize winsz;
     ioctl(0, TIOCGWINSZ, &winsz);
     rows = winsz.ws_row;
     cols = winsz.ws_col;
-}
-
-void sig_handler(int signal)
-{
-    (void)signal;
-    printf(CSI "?25h");
-    printf(CSI "u");
-    tcsetattr(STDIN_FILENO, TCSANOW, &original);
-    exit(0);
 }
 
 void move(int row, int column)
@@ -147,8 +136,11 @@ void clear_with_color(int rgb)
             printf(" ");
 }
 
+struct termios original, changed;
+
 void setup_terminal()
 {
+    // Set the terminal to non-canonical, no echo
     tcgetattr(STDIN_FILENO, &original);
     changed = original;
     changed.c_lflag &= ~(ICANON | ECHO);
@@ -156,12 +148,26 @@ void setup_terminal()
     changed.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &changed);
 
+    // disable stdout buffering
     setbuf(stdout, NULL);
 
-    printf(CSI "s");
-    printf(CSI "2J");
-    printf(CSI "3J");
-    printf(CSI "?25l");
+    printf(CSI "s");    // save cursor position
+    printf(CSI "2J");   // clear screen
+    printf(CSI "3J");   // clear backscroll
+    printf(CSI "?25l"); // hide cursor
+}
+
+void sig_handler(int signal)
+{
+    (void)signal; // value of `signal` is ignored
+
+    printf(CSI "?25h"); // show cursor
+    printf(CSI "u");    // restore cursor position
+
+    // Restore the original terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &original);
+
+    exit(0);
 }
 
 int main()
