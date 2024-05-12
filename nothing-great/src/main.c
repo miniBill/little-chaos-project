@@ -167,30 +167,29 @@ void draw_rings(void)
     for (int ring = 0; ring < 2; ring++)
     {
         int i = -shift;
-        int ring_ = ring * 2 + 1;
 
-        for (int y = rows - ring_ - 1; y > ring_; y--)
+        for (int y = rows - ring * 2 - 2; y > ring * 2 + 1; y--)
         {
-            move(y, ring_ + ring);
+            move(y, ring * 3 + 1);
             printf("%c", little_chaos[i++ % len]);
         }
 
-        for (int x = ring_ + ring; x < cols - ring_ - ring; x++)
+        for (int x = ring * 3 + 1; x < cols - ring * 3 - 1; x++)
         {
-            move(ring_, x);
+            move((ring * 2 + 1), x);
             printf("%c", little_chaos[i++ % len]);
         }
 
-        for (int y = ring_ + 1; y < rows - ring_ - 1; y++)
+        for (int y = ring * 2 + 2; y < rows - ring * 2 - 2; y++)
         {
-            move(y, cols - ring_ - ring - 1);
+            move(y, cols - ring * 3 - 2);
             printf("%c", little_chaos[i++ % len]);
         }
 
-        for (int x = cols - ring_ - ring - 1; x > ring_ + ring; x--)
+        for (int x = cols - ring * 3 - 2; x > ring * 3 + 1; x--)
         {
-            move(rows - ring_ - 1, x);
-            // if (x == ring_ + 1)
+            move(rows - ring * 2 - 2, x);
+            // if (x == ring * 2 + 2)
             //     printf(" ");
             // else
             printf("%c", little_chaos[i++ % len]);
