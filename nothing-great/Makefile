@@ -1,4 +1,4 @@
 CFLAGS=-Wall -pedantic -Wextra -Werror
 
-main: src/main.c
-	${CC} ${CFLAGS} -lm -o $@ $^
+main: src/main.c src/letters.h
+	${CC} ${CFLAGS} -lm -o $@ $<

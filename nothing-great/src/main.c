@@ -9,6 +9,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "letters.h"
+
 #define ESC "\033"
 
 #define CSI ESC "["
@@ -16,7 +18,10 @@
 // This is just to work around a bug in the VScode LSP
 #define PI 3.14159265358979323846
 
+#define BLACK 0
+
 volatile int rows, cols;
+float current_time = 0;
 
 struct termios original, changed;
 
@@ -32,13 +37,14 @@ void sig_handler(int signal)
 {
     (void)signal;
     printf(CSI "?25h");
+    printf(CSI "u");
     tcsetattr(STDIN_FILENO, TCSANOW, &original);
     exit(0);
 }
 
 void move(int row, int column)
 {
-    printf(CSI "%d;%dH", row, column);
+    printf(CSI "%d;%dH", row + 1, column + 1);
 }
 
 void set_fg(int r, int g, int b)
@@ -102,6 +108,45 @@ int rgb(float h, float s, float l)
     return r << 16 | g << 8 | b;
 }
 
+int color_at(int y, int x)
+{
+    float dy = (float)rows / 2 - y;
+    float dx = (float)cols / 2 - x;
+    float angle = fmod(atan2(dy, dx) / PI + 1 + current_time, 2);
+    float distance = sqrt(dx * dx + dy * dy);
+
+    float h = angle * 180;
+    float l = distance * 2 / sqrt(rows * rows + cols * cols);
+    return rgb(h, 1, l);
+}
+
+void letter_at(int y, int x, letter letter)
+{
+    move(y, x);
+    for (int ly = 0; ly < LETTER_HEIGHT; ly++)
+    {
+        for (int lx = 0; lx < LETTER_WIDTH; lx++)
+        {
+            int color = color_at(y + ly, x + lx);
+            if (letter[ly][lx] == ' ')
+                set_bg_rgb(BLACK);
+            else
+                set_bg_rgb(color);
+            printf(" ");
+        }
+        move(y + ly, x);
+    }
+}
+
+void clear_with_color(int rgb)
+{
+    move(1, 1);
+    set_bg_rgb(rgb);
+    for (int y = 0; y < rows; y++)
+        for (int x = 0; x < cols; x++)
+            printf(" ");
+}
+
 int main()
 {
     tcgetattr(STDIN_FILENO, &original);
@@ -118,30 +163,25 @@ int main()
 
     measure_screen();
 
+    printf(CSI "s");
     printf(CSI "2J");
     printf(CSI "3J");
     printf(CSI "?25l");
 
-    for (float l = 0;; l = fmod(l + 1. / 360, 2))
+    clear_with_color(BLACK);
+
+    while (1)
     {
-        move(1, 1);
-        for (int y = 1; y <= rows; y++)
+        current_time = fmod(current_time + 1. / 360, 2);
+
+        letter_at(2, 2, LETTER_N);
+
+        set_bg_rgb(BLACK);
+
+        for (int y = 0; y < rows; y++)
         {
-            for (int x = 1; x <= cols; x++)
+            for (int x = 0; x < cols; x++)
             {
-                // move(y, x);
-
-                float dy = (float)rows / 2 - y;
-                float dx = (float)cols / 2 - x;
-                float angle = fmod(atan2(dy, dx) / PI + 1 + l, 2);
-                float distance = sqrt(dx * dx + dy * dy);
-
-                float h = angle * 180;
-                float l = distance * 2 / sqrt(rows * rows + cols * cols);
-
-                set_bg_rgb(rgb(h, 1, l));
-
-                printf(" ");
             }
         }
 
