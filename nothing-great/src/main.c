@@ -11,8 +11,8 @@
 
 #include "letters.h"
 
+// ANSI escape sequences
 #define ESC "\033"
-
 #define CSI ESC "["
 
 // This is just to work around a bug in the VScode LSP
