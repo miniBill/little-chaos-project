@@ -31,9 +31,9 @@ int color_at(int y, int x)
 
 void letter_at(int y, int x, letter letter)
 {
-    move(y, x);
     for (int ly = 0; ly < LETTER_HEIGHT; ly++)
     {
+        move(y + ly, x);
         for (int lx = 0; lx < LETTER_WIDTH; lx++)
         {
             int color = color_at(y + ly, x + lx);
@@ -43,7 +43,6 @@ void letter_at(int y, int x, letter letter)
                 set_bg_rgb(color);
             printf(" ");
         }
-        move(y + ly, x);
     }
 }
 
