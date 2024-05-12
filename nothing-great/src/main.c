@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <locale.h>
 #include <math.h>
 #include <signal.h>
 #include <stdio.h>
@@ -15,6 +16,8 @@
 // This is just to work around a bug in the VScode LSP
 #define PI 3.14159265358979323846
 
+#define BG_COLOR 0xe0e0e0
+
 float current_time = 0;
 
 int color_at(int y, int x)
@@ -26,6 +29,7 @@ int color_at(int y, int x)
 
     float h = angle * 180;
     float l = distance * 2 / sqrt(rows * rows + cols * cols);
+    l = 0.3;
     return hsl_to_rgb(h, 1, l);
 }
 
@@ -37,11 +41,9 @@ void letter_at(int y, int x, letter letter)
         for (int lx = 0; lx < LETTER_WIDTH; lx++)
         {
             int color = color_at(y + ly, x + lx);
-            if (letter[ly][lx] == ' ')
-                set_bg_rgb(BLACK);
-            else
-                set_bg_rgb(color);
-            printf(" ");
+            set_fg_rgb(color);
+            wchar_t str[2] = {letter[ly][lx], 0};
+            printf("%ls", str);
         }
     }
 }
@@ -108,6 +110,8 @@ void setup_terminal()
     // disable stdout buffering
     setbuf(stdout, NULL);
 
+    setlocale(LC_ALL, "");
+
     save_cursor_position();
     clear_screen();
     hide_cursor();
@@ -115,7 +119,12 @@ void setup_terminal()
 
 void sig_handler(int signal)
 {
-    (void)signal; // value of `signal` is ignored
+    if (signal == SIGWINCH)
+    {
+        measure_screen();
+        clear_with_color(BG_COLOR);
+        return;
+    }
 
     show_cursor();
     restore_cursor_position();
@@ -132,16 +141,17 @@ int main()
     action.sa_handler = sig_handler;
     sigaction(SIGINT, &action, 0);
     sigaction(SIGTERM, &action, 0);
+    sigaction(SIGWINCH, &action, 0);
 
     setup_terminal();
 
     measure_screen();
 
-    clear_with_color(BLACK);
+    clear_with_color(BG_COLOR);
 
     while (1)
     {
-        current_time = fmod(current_time + 1. / 360, 2);
+        current_time = fmod(current_time + 1. / 60, 2);
 
         write_at(rows / 2 - LETTER_HEIGHT, cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2, "nothing");
         write_at(rows / 2 + 1, cols / 2 - (LETTER_WIDTH + 1) * strlen("great") / 2, "great");

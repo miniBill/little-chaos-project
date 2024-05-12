@@ -55,6 +55,11 @@ void set_fg(int r, int g, int b)
     printf(CSI "38;2;%d;%d;%dm", r, g, b);
 }
 
+void set_fg_rgb(int rgb)
+{
+    set_fg(rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff);
+}
+
 void set_bg(int r, int g, int b)
 {
     printf(CSI "48;2;%d;%d;%dm", r, g, b);
