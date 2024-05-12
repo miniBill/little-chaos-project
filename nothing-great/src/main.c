@@ -85,8 +85,12 @@ void clear_with_color(int rgb)
     move(0, 0);
     set_bg_rgb(rgb);
     for (int y = 0; y < rows; y++)
+    {
         for (int x = 0; x < cols; x++)
+        {
             printf(" ");
+        }
+    }
 }
 
 struct termios original, changed;
@@ -156,34 +160,37 @@ void draw_rings(void)
 
     int shift = current_time * 10;
     while (shift > 0)
+    {
         shift -= len;
+    }
 
-    for (int ring = 1; ring < 4; ring += 2)
+    for (int ring = 0; ring < 2; ring++)
     {
         int i = -shift;
+        int ring_ = ring * 2 + 1;
 
-        for (int y = rows - ring - 1; y > ring; y--)
+        for (int y = rows - ring_ - 1; y > ring_; y--)
         {
-            move(y, ring);
+            move(y, ring_ + ring);
             printf("%c", little_chaos[i++ % len]);
         }
 
-        for (int x = ring; x < cols - ring; x++)
+        for (int x = ring_ + ring; x < cols - ring_ - ring; x++)
         {
-            move(ring, x);
+            move(ring_, x);
             printf("%c", little_chaos[i++ % len]);
         }
 
-        for (int y = ring + 1; y < rows - ring - 1; y++)
+        for (int y = ring_ + 1; y < rows - ring_ - 1; y++)
         {
-            move(y, cols - ring - 1);
+            move(y, cols - ring_ - ring - 1);
             printf("%c", little_chaos[i++ % len]);
         }
 
-        for (int x = cols - ring - 1; x > ring; x--)
+        for (int x = cols - ring_ - ring - 1; x > ring_ + ring; x--)
         {
-            move(rows - ring - 1, x);
-            // if (x == ring + 1)
+            move(rows - ring_ - 1, x);
+            // if (x == ring_ + 1)
             //     printf(" ");
             // else
             printf("%c", little_chaos[i++ % len]);
