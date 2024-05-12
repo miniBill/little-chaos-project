@@ -160,6 +160,48 @@ void set_signals(void)
     }
 }
 
+void draw_rings(void)
+{
+    char little_chaos[] = "Nothing Great "; // "Little Chaos ";
+    int len = strlen(little_chaos);
+
+    int shift = current_time * 10;
+    while (shift > 0)
+        shift -= len;
+
+    for (int ring = 1; ring < 4; ring += 2)
+    {
+        int i = -shift;
+
+        for (int y = rows - ring - 1; y > ring; y--)
+        {
+            move(y, ring);
+            printf("%c", little_chaos[i++ % len]);
+        }
+
+        for (int x = ring; x < cols - ring; x++)
+        {
+            move(ring, x);
+            printf("%c", little_chaos[i++ % len]);
+        }
+
+        for (int y = ring + 1; y < rows - ring - 1; y++)
+        {
+            move(y, cols - ring - 1);
+            printf("%c", little_chaos[i++ % len]);
+        }
+
+        for (int x = cols - ring - 1; x > ring; x--)
+        {
+            move(rows - ring - 1, x);
+            // if (x == ring + 1)
+            //     printf(" ");
+            // else
+            printf("%c", little_chaos[i++ % len]);
+        }
+    }
+}
+
 int main()
 {
     set_signals();
@@ -174,44 +216,7 @@ int main()
 
         current_time += 1. / 60;
 
-        char little_chaos[] = "Little Chaos ";
-        int len = strlen(little_chaos);
-
-        int shift = current_time * 10;
-        while (shift > 0)
-            shift -= len;
-
-        for (int ring = 1; ring < 4; ring += 2)
-        {
-            int i = -shift;
-
-            for (int y = rows - ring - 1; y > ring; y--)
-            {
-                move(y, ring);
-                printf("%c", little_chaos[i++ % len]);
-            }
-
-            for (int x = ring; x < cols - ring; x++)
-            {
-                move(ring, x);
-                printf("%c", little_chaos[i++ % len]);
-            }
-
-            for (int y = ring + 1; y < rows - ring - 1; y++)
-            {
-                move(y, cols - ring - 1);
-                printf("%c", little_chaos[i++ % len]);
-            }
-
-            for (int x = cols - ring - 1; x > ring; x--)
-            {
-                move(rows - ring - 1, x);
-                if (x == ring + 1)
-                    printf(" ");
-                else
-                    printf("%c", little_chaos[i++ % len]);
-            }
-        }
+        draw_rings();
 
         int topx = cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2;
         int bottomx = cols / 2 - (LETTER_WIDTH + 1) * strlen("great") / 2;
