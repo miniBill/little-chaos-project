@@ -147,7 +147,7 @@ void clear_with_color(int rgb)
             printf(" ");
 }
 
-int main()
+void setup_terminal()
 {
     tcgetattr(STDIN_FILENO, &original);
     changed = original;
@@ -156,17 +156,22 @@ int main()
     changed.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &changed);
 
-    signal(SIGINT, sig_handler);
-    signal(SIGTERM, sig_handler);
-
     setbuf(stdout, NULL);
-
-    measure_screen();
 
     printf(CSI "s");
     printf(CSI "2J");
     printf(CSI "3J");
     printf(CSI "?25l");
+}
+
+int main()
+{
+    signal(SIGINT, sig_handler);
+    signal(SIGTERM, sig_handler);
+
+    setup_terminal();
+
+    measure_screen();
 
     clear_with_color(BLACK);
 
@@ -185,6 +190,6 @@ int main()
             }
         }
 
-        usleep(1000 * 1000 / 60);
+        usleep(1000 * 1000 / 60); // Very approximately 60 fps
     }
 }
