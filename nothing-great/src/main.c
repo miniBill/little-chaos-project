@@ -13,6 +13,9 @@
 
 #define CSI ESC "["
 
+// This is just to work around a bug in the VScode LSP
+#define PI 3.14159265358979323846
+
 volatile int rows, cols;
 
 struct termios original, changed;
@@ -128,9 +131,9 @@ int main()
             {
                 // move(y, x);
 
-                float dy = rows / 2 - y;
-                float dx = cols / 2 - x;
-                float angle = fmod(atan2(dy, dx) / M_PI + 1 + l, 2);
+                float dy = (float)rows / 2 - y;
+                float dx = (float)cols / 2 - x;
+                float angle = fmod(atan2(dy, dx) / PI + 1 + l, 2);
                 float distance = sqrt(dx * dx + dy * dy);
 
                 float h = angle * 180;
