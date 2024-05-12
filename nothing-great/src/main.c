@@ -202,8 +202,10 @@ void sig_handler(int signal)
 
 int main()
 {
-    signal(SIGINT, sig_handler);
-    signal(SIGTERM, sig_handler);
+    struct sigaction action = {0};
+    action.sa_handler = sig_handler;
+    sigaction(SIGINT, &action, 0);
+    sigaction(SIGTERM, &action, 0);
 
     setup_terminal();
 
@@ -215,7 +217,7 @@ int main()
     {
         current_time = fmod(current_time + 1. / 360, 2);
 
-        write_at(2, 2, "nothing");
+        write_at(3, 3, "nothing");
 
         usleep(1000 * 1000 / 60); // Very approximately 60 fps
     }
