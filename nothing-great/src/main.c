@@ -80,14 +80,14 @@ letter *char_to_letter(char c)
     }
 }
 
-void write_at(int y, int x, char *string)
+void write_at(int y, int x, int spacing, char *string)
 {
     int len = strlen(string);
     for (int i = 0; i < len; i++)
     {
         letter *letter;
         if ((letter = char_to_letter(string[i])) != 0)
-            letter_at(y, x + i * (LETTER_WIDTH + 1), *letter);
+            letter_at(y, x + i * (LETTER_WIDTH + spacing), *letter);
     }
 }
 
@@ -181,8 +181,6 @@ int main()
         while (shift > 0)
             shift -= len;
 
-        int topx = cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2;
-
         for (int ring = 1; ring < 4; ring += 2)
         {
             int i = -shift;
@@ -215,8 +213,11 @@ int main()
             }
         }
 
-        write_at(rows / 2 - LETTER_HEIGHT, topx, "nothing");
-        write_at(rows / 2 + 1, cols / 2 - (LETTER_WIDTH + 1) * strlen("great") / 2, "great");
+        int topx = cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2;
+        int bottomx = cols / 2 - (LETTER_WIDTH + 1) * strlen("great") / 2;
+
+        write_at(rows / 2 - LETTER_HEIGHT, topx, 1, "nothing");
+        write_at(rows / 2 + 1, bottomx, 2, "great");
 
         usleep(1000 * 1000 / 60); // Very approximately 60 fps
     }
