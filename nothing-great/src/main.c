@@ -38,45 +38,24 @@ int color_at(int y, int x)
     return hsl_to_rgb(h, 0.8, l);
 }
 
-void letter_at(int y, int x, letter letter)
+void letter_at(int y, int x, char c)
 {
+    letter *letter = char_to_letter(c);
+    if (letter == 0)
+    {
+        return;
+    }
+
     for (int ly = 0; ly < LETTER_HEIGHT; ly++)
     {
         move(y + ly, x);
-        for (int lx = 0; lx < LETTER_WIDTH; lx++)
+        for (int lx = 0; lx < (c == 'i' ? 1 : LETTER_WIDTH); lx++)
         {
             int color = color_at(y + ly, x + lx);
             set_fg_rgb(color);
-            wchar_t str[2] = {letter[ly][lx], 0};
+            wchar_t str[2] = {(*letter)[ly][lx], 0};
             printf("%ls", str);
         }
-    }
-}
-
-letter *char_to_letter(char c)
-{
-    switch (c)
-    {
-    case 'a':
-        return &LETTER_A;
-    case 'e':
-        return &LETTER_E;
-    case 'g':
-        return &LETTER_G;
-    case 'h':
-        return &LETTER_H;
-    case 'i':
-        return &LETTER_I;
-    case 'n':
-        return &LETTER_N;
-    case 'o':
-        return &LETTER_O;
-    case 'r':
-        return &LETTER_R;
-    case 't':
-        return &LETTER_T;
-    default:
-        return 0;
     }
 }
 
@@ -85,9 +64,7 @@ void write_at(int y, int x, int spacing, char *string)
     int len = strlen(string);
     for (int i = 0; i < len; i++)
     {
-        letter *letter;
-        if ((letter = char_to_letter(string[i])) != 0)
-            letter_at(y, x + i * (LETTER_WIDTH + spacing), *letter);
+        letter_at(y, x + i * (LETTER_WIDTH + spacing), string[i]);
     }
 }
 

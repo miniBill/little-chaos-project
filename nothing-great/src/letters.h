@@ -44,13 +44,13 @@ letter LETTER_H = {
     L"▛   ▜"};
 
 letter LETTER_I = {
-    L"  ▙  ",
-    L"  █  ",
-    L"  █  ",
-    L"  █  ",
-    L"  █  ",
-    L"  █  ",
-    L"  ▜  "};
+    L"▙    ",
+    L"█    ",
+    L"█    ",
+    L"█    ",
+    L"█    ",
+    L"█    ",
+    L"▜    "};
 
 letter LETTER_N = {
     L"▙   ▟",
@@ -87,3 +87,30 @@ letter LETTER_T = {
     L"  █  ",
     L"  █  ",
     L"  ▜  "};
+
+letter *char_to_letter(char c)
+{
+    switch (c)
+    {
+    case 'a':
+        return &LETTER_A;
+    case 'e':
+        return &LETTER_E;
+    case 'g':
+        return &LETTER_G;
+    case 'h':
+        return &LETTER_H;
+    case 'i':
+        return &LETTER_I;
+    case 'n':
+        return &LETTER_N;
+    case 'o':
+        return &LETTER_O;
+    case 'r':
+        return &LETTER_R;
+    case 't':
+        return &LETTER_T;
+    default:
+        return 0;
+    }
+}
