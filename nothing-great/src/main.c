@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <errno.h>
 #include <locale.h>
 #include <math.h>
 #include <signal.h>
@@ -139,13 +140,30 @@ void sig_handler(int signal)
     exit(0);
 }
 
-int main()
+void set_signals(void)
 {
     struct sigaction action = {0};
     action.sa_handler = sig_handler;
-    sigaction(SIGINT, &action, 0);
-    sigaction(SIGTERM, &action, 0);
-    sigaction(SIGWINCH, &action, 0);
+    if (sigaction(SIGINT, &action, 0) == -1)
+    {
+        perror("sigaction(SIGINT, &action, 0)");
+        exit(EXIT_FAILURE);
+    }
+    if (sigaction(SIGTERM, &action, 0) == -1)
+    {
+        perror("sigaction(SIGTERM, &action, 0)");
+        exit(EXIT_FAILURE);
+    }
+    if (sigaction(SIGWINCH, &action, 0) == -1)
+    {
+        perror("sigaction(SIGWINCH, &action, 0)");
+        exit(EXIT_FAILURE);
+    }
+}
+
+int main()
+{
+    set_signals();
 
     setup_terminal();
 
