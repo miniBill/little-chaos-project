@@ -127,9 +127,39 @@ void letter_at(int y, int x, letter letter)
     }
 }
 
+int char_to_letter(char c, letter **result)
+{
+#define char_to_letter_l(l, u) \
+    case l:                    \
+        *result = &u;          \
+        return 1;
+    switch (c)
+    {
+        char_to_letter_l('g', LETTER_G);
+        char_to_letter_l('h', LETTER_H);
+        char_to_letter_l('i', LETTER_I);
+        char_to_letter_l('n', LETTER_N);
+        char_to_letter_l('o', LETTER_O);
+        char_to_letter_l('t', LETTER_T);
+    }
+    return 0;
+#undef char_to_letter_l
+}
+
+void write_at(int y, int x, char *string)
+{
+    int len = strlen(string);
+    for (int i = 0; i < len; i++)
+    {
+        letter *letter;
+        if (char_to_letter(string[i], &letter))
+            letter_at(y, x + i * (LETTER_WIDTH + 1), *letter);
+    }
+}
+
 void clear_with_color(int rgb)
 {
-    move(1, 1);
+    move(0, 0);
     set_bg_rgb(rgb);
     for (int y = 0; y < rows; y++)
         for (int x = 0; x < cols; x++)
@@ -185,16 +215,7 @@ int main()
     {
         current_time = fmod(current_time + 1. / 360, 2);
 
-        letter_at(2, 2, LETTER_N);
-
-        set_bg_rgb(BLACK);
-
-        for (int y = 0; y < rows; y++)
-        {
-            for (int x = 0; x < cols; x++)
-            {
-            }
-        }
+        write_at(2, 2, "nothing");
 
         usleep(1000 * 1000 / 60); // Very approximately 60 fps
     }

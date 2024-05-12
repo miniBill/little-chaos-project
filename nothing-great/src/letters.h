@@ -13,3 +13,48 @@ letter LETTER_N = {
     {"X  XX"},
     {"X   X"},
     {"X   X"}};
+
+letter LETTER_O = {
+    {"XXXXX"},
+    {"X   X"},
+    {"X   X"},
+    {"X   X"},
+    {"X   X"},
+    {"X   X"},
+    {"XXXXX"}};
+
+letter LETTER_T = {
+    {"XXXXX"},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "}};
+
+letter LETTER_H = {
+    {"X   X"},
+    {"X   X"},
+    {"X   X"},
+    {"XXXXX"},
+    {"X   X"},
+    {"X   X"},
+    {"X   X"}};
+
+letter LETTER_I = {
+    {"  X  "},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "},
+    {"  X  "}};
+
+letter LETTER_G = {
+    {"XXXXX"},
+    {"X   X"},
+    {"X    "},
+    {"X XXX"},
+    {"X  X "},
+    {"X  X "},
+    {"XXXX "}};
