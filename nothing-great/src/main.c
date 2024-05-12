@@ -47,12 +47,11 @@ void letter_at(int y, int x, letter letter)
     }
 }
 
-int char_to_letter(char c, letter **result)
+letter *char_to_letter(char c)
 {
 #define char_to_letter_l(l, u) \
     case l:                    \
-        *result = &u;          \
-        return 1;
+        return &u;
     switch (c)
     {
         char_to_letter_l('g', LETTER_G);
@@ -72,7 +71,7 @@ void write_at(int y, int x, char *string)
     for (int i = 0; i < len; i++)
     {
         letter *letter;
-        if (char_to_letter(string[i], &letter))
+        if ((letter = char_to_letter(string[i])) != 0)
             letter_at(y, x + i * (LETTER_WIDTH + 1), *letter);
     }
 }
@@ -136,7 +135,7 @@ int main()
     {
         current_time = fmod(current_time + 1. / 360, 2);
 
-        write_at(3, 3, "nothing");
+        write_at(10, 10, "nothing");
 
         usleep(1000 * 1000 / 60); // Very approximately 60 fps
     }
