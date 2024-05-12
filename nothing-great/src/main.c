@@ -17,23 +17,22 @@
 // This is just to work around a bug in the VScode LSP
 #define PI 3.14159265358979323846
 
-#define BG_COLOR 0xc0e0e0
+#define BG_COLOR 0xc0e0f0
 
 float current_time = 0;
 
 int color_at(int y, int x)
 {
-    float dy = (float)rows / 2 - y;
-    float dx = (float)cols / 2 - x;
+    // float dy = (float)rows / 2 - y;
+    // float dx = (float)cols / 2 - x;
     float raw_angle = (float)x / rows + 2.5 * (float)y / cols + 2 * current_time;
     // float raw_angle = atan2(dy, dx) / PI + 1;
     float angle = fmod(raw_angle, 2); // [0, 2]
-    float distance = sqrt(dx * dx + dy * dy);
+    // float distance = sqrt(dx * dx + dy * dy);
 
     float h = fabs(angle - 1) * 120 + 120; //[100, 160];
-    float l = distance * 2 / sqrt(rows * rows + cols * cols);
-    l = l / 3.0 + 0.275;
-    // return hsl_to_rgb(h, 1, l);
+    // float l = distance * 2 / sqrt(rows * rows + cols * cols);
+    float l = 0.45;
 
     return hsl_to_rgb(h, 0.8, l);
 }
@@ -155,6 +154,7 @@ void set_signals(void)
 
 void draw_rings(void)
 {
+    set_fg_rgb(0x0060d0);
     char little_chaos[] = "Nothing Great "; // "Little Chaos ";
     int len = strlen(little_chaos);
 
