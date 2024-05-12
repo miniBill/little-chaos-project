@@ -127,7 +127,6 @@ void sig_handler(int signal)
     if (signal == SIGWINCH)
     {
         measure_screen();
-        clear_with_color(BG_COLOR);
         return;
     }
 
@@ -169,10 +168,10 @@ int main()
 
     measure_screen();
 
-    clear_with_color(BG_COLOR);
-
     while (1)
     {
+        clear_with_color(BG_COLOR);
+
         current_time = fmod(current_time + 1. / 60, 2);
 
         write_at(rows / 2 - LETTER_HEIGHT, cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2, "nothing");
