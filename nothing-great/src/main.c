@@ -101,7 +101,7 @@ void clear_with_color(int rgb)
 
 struct termios original, changed;
 
-void setup_terminal()
+void setup_terminal(void)
 {
     // Set the terminal to non-canonical, no echo
     tcgetattr(STDIN_FILENO, &original);

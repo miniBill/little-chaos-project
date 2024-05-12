@@ -11,7 +11,7 @@
 
 volatile int rows, cols;
 
-void measure_screen()
+void measure_screen(void)
 {
     struct winsize winsz;
     ioctl(0, TIOCGWINSZ, &winsz);
@@ -25,27 +25,27 @@ void move(int row, int column)
     printf(CSI "%d;%dH", row + 1, column + 1);
 }
 
-void save_cursor_position()
+void save_cursor_position(void)
 {
     printf(CSI "s");
 }
 
-void restore_cursor_position()
+void restore_cursor_position(void)
 {
     printf(CSI "u");
 }
 
-void clear_screen()
+void clear_screen(void)
 {
     printf(CSI "2J");
 }
 
-void hide_cursor()
+void hide_cursor(void)
 {
     printf(CSI "?25l");
 }
 
-void show_cursor()
+void show_cursor(void)
 {
     printf(CSI "?25h");
 }
