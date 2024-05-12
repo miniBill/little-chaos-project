@@ -49,7 +49,7 @@ void letter_at(int y, int x, char c)
     for (int ly = 0; ly < LETTER_HEIGHT; ly++)
     {
         move(y + ly, x);
-        for (int lx = 0; lx < (c == 'i' ? 1 : LETTER_WIDTH); lx++)
+        for (int lx = 0; lx < LETTER_WIDTH; lx++)
         {
             int color = color_at(y + ly, x + lx);
             set_fg_rgb(color);
@@ -62,9 +62,21 @@ void letter_at(int y, int x, char c)
 void write_at(int y, int x, int spacing, char *string)
 {
     int len = strlen(string);
-    for (int i = 0; i < len; i++)
+    for (int i = 0, dx = 0; i < len; i++)
     {
-        letter_at(y, x + i * (LETTER_WIDTH + spacing), string[i]);
+        letter_at(y, x + dx, string[i]);
+        switch (string[i])
+        {
+        case 'i':
+            dx += 3 + spacing;
+            break;
+        case 't':
+            dx += 4 + spacing;
+            break;
+        default:
+            dx += LETTER_WIDTH + spacing;
+            break;
+        }
     }
 }
 
@@ -195,8 +207,8 @@ int main()
 
         draw_rings();
 
-        int topx = cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2;
-        int bottomx = cols / 2 - (LETTER_WIDTH + 1) * strlen("great") / 2;
+        int topx = cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2 + 1; //+1 is the 'i'
+        int bottomx = cols / 2 - (LETTER_WIDTH + 2) * strlen("great") / 2;
 
         write_at(rows / 2 - LETTER_HEIGHT, topx, 1, "nothing");
         write_at(rows / 2 + 1, bottomx, 2, "great");

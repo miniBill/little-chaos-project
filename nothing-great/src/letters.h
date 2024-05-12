@@ -44,13 +44,13 @@ letter LETTER_H = {
     L"▛   ▜"};
 
 letter LETTER_I = {
-    L"▙    ",
-    L"█    ",
-    L"█    ",
-    L"█    ",
-    L"█    ",
-    L"█    ",
-    L"▜    "};
+    L" ▙   ",
+    L" █   ",
+    L" █   ",
+    L" █   ",
+    L" █   ",
+    L" █   ",
+    L" ▜   "};
 
 letter LETTER_N = {
     L"▙   ▟",
@@ -80,13 +80,13 @@ letter LETTER_R = {
     L"▛   ▜"};
 
 letter LETTER_T = {
-    L"▟███▙",
-    L"  █  ",
-    L"  █  ",
-    L"  █  ",
-    L"  █  ",
-    L"  █  ",
-    L"  ▜  "};
+    L"▟██▙ ",
+    L" ▐▌  ",
+    L" ▐▌  ",
+    L" ▐▌  ",
+    L" ▐▌  ",
+    L" ▐▌  ",
+    L" ▝▌  "};
 
 letter *char_to_letter(char c)
 {
