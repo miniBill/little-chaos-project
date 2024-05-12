@@ -119,7 +119,7 @@ int main()
     printf(CSI "3J");
     printf(CSI "?25l");
 
-    for (int l = 0;; l = (l + 1) % 360)
+    for (float l = 0;; l = fmod(l + 1. / 360, 2))
     {
         move(1, 1);
         for (int y = 1; y <= rows; y++)
@@ -130,7 +130,7 @@ int main()
 
                 float dy = rows / 2 - y;
                 float dx = cols / 2 - x;
-                float angle = fmod(atan2(dy, dx) / M_PI + 1 + 2 * (float)l / 360, 2);
+                float angle = fmod(atan2(dy, dx) / M_PI + 1 + l, 2);
                 float distance = sqrt(dx * dx + dy * dy);
 
                 float h = angle * 180;
