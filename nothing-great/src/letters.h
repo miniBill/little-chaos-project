@@ -5,32 +5,32 @@
 
 typedef char *letter[];
 
-letter LETTER_N = {
+letter LETTER_A = {
+    " XXX ",
     "X   X",
     "X   X",
-    "XX  X",
-    "X X X",
-    "X  XX",
+    "XXXXX",
+    "X   X",
     "X   X",
     "X   X"};
 
-letter LETTER_O = {
+letter LETTER_E = {
     "XXXXX",
-    "X   X",
-    "X   X",
-    "X   X",
-    "X   X",
-    "X   X",
+    "X    ",
+    "X    ",
+    "XXXXX",
+    "X    ",
+    "X    ",
     "XXXXX"};
 
-letter LETTER_T = {
+letter LETTER_G = {
     "XXXXX",
-    "  X  ",
-    "  X  ",
-    "  X  ",
-    "  X  ",
-    "  X  ",
-    "  X  "};
+    "X   X",
+    "X    ",
+    "X XXX",
+    "X  X ",
+    "X  X ",
+    "XXXX "};
 
 letter LETTER_H = {
     "X   X",
@@ -50,11 +50,38 @@ letter LETTER_I = {
     "  X  ",
     "  X  "};
 
-letter LETTER_G = {
+letter LETTER_N = {
+    "X   X",
+    "X   X",
+    "XX  X",
+    "X X X",
+    "X  XX",
+    "X   X",
+    "X   X"};
+
+letter LETTER_O = {
     "XXXXX",
     "X   X",
-    "X    ",
-    "X XXX",
-    "X  X ",
-    "X  X ",
-    "XXXX "};
+    "X   X",
+    "X   X",
+    "X   X",
+    "X   X",
+    "XXXXX"};
+
+letter LETTER_R = {
+    "XXXX ",
+    "X   X",
+    "X   X",
+    "XXXX ",
+    "X   X",
+    "X   X",
+    "X   X"};
+
+letter LETTER_T = {
+    "XXXXX",
+    "  X  ",
+    "  X  ",
+    "  X  ",
+    "  X  ",
+    "  X  ",
+    "  X  "};

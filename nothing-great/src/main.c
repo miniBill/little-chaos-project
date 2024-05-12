@@ -53,11 +53,14 @@ letter *char_to_letter(char c)
         return &u;
     switch (c)
     {
+        char_to_letter_l('a', LETTER_A);
+        char_to_letter_l('e', LETTER_E);
         char_to_letter_l('g', LETTER_G);
         char_to_letter_l('h', LETTER_H);
         char_to_letter_l('i', LETTER_I);
         char_to_letter_l('n', LETTER_N);
         char_to_letter_l('o', LETTER_O);
+        char_to_letter_l('r', LETTER_R);
         char_to_letter_l('t', LETTER_T);
     }
     return 0;
