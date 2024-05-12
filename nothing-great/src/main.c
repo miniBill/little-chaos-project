@@ -17,7 +17,7 @@
 // This is just to work around a bug in the VScode LSP
 #define PI 3.14159265358979323846
 
-#define BG_COLOR 0xe0e0e0
+#define BG_COLOR 0xc0e0e0
 
 float current_time = 0;
 
@@ -25,12 +25,12 @@ int color_at(int y, int x)
 {
     float dy = (float)rows / 2 - y;
     float dx = (float)cols / 2 - x;
-    float raw_angle = (float)x / rows + (2 - current_time);
+    float raw_angle = (float)x / rows + 2.5 * (float)y / cols + 2 * current_time;
     // float raw_angle = atan2(dy, dx) / PI + 1;
-    float angle = fmod(raw_angle, 2);
+    float angle = fmod(raw_angle, 2); // [0, 2]
     float distance = sqrt(dx * dx + dy * dy);
 
-    float h = angle * 180;
+    float h = fabs(angle - 1) * 120 + 120; //[100, 160];
     float l = distance * 2 / sqrt(rows * rows + cols * cols);
     l = l / 3.0 + 0.275;
     // return hsl_to_rgb(h, 1, l);
@@ -172,9 +172,50 @@ int main()
     {
         clear_with_color(BG_COLOR);
 
-        current_time = fmod(current_time + 1. / 60, 2);
+        current_time += 1. / 60;
 
-        write_at(rows / 2 - LETTER_HEIGHT, cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2, "nothing");
+        char little_chaos[] = "Little Chaos ";
+        int len = strlen(little_chaos);
+
+        int shift = current_time * 10;
+        while (shift > 0)
+            shift -= len;
+
+        int topx = cols / 2 - (LETTER_WIDTH + 1) * strlen("nothing") / 2;
+
+        for (int ring = 1; ring < 4; ring += 2)
+        {
+            int i = -shift;
+
+            for (int y = rows - ring - 1; y > ring; y--)
+            {
+                move(y, ring);
+                printf("%c", little_chaos[i++ % len]);
+            }
+
+            for (int x = ring; x < cols - ring; x++)
+            {
+                move(ring, x);
+                printf("%c", little_chaos[i++ % len]);
+            }
+
+            for (int y = ring + 1; y < rows - ring - 1; y++)
+            {
+                move(y, cols - ring - 1);
+                printf("%c", little_chaos[i++ % len]);
+            }
+
+            for (int x = cols - ring - 1; x > ring; x--)
+            {
+                move(rows - ring - 1, x);
+                if (x == ring + 1)
+                    printf(" ");
+                else
+                    printf("%c", little_chaos[i++ % len]);
+            }
+        }
+
+        write_at(rows / 2 - LETTER_HEIGHT, topx, "nothing");
         write_at(rows / 2 + 1, cols / 2 - (LETTER_WIDTH + 1) * strlen("great") / 2, "great");
 
         usleep(1000 * 1000 / 60); // Very approximately 60 fps
