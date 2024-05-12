@@ -24,13 +24,17 @@ int color_at(int y, int x)
 {
     float dy = (float)rows / 2 - y;
     float dx = (float)cols / 2 - x;
-    float angle = fmod(atan2(dy, dx) / PI + 1 + current_time, 2);
+    float raw_angle = (float)x / rows + (2 - current_time);
+    // float raw_angle = atan2(dy, dx) / PI + 1;
+    float angle = fmod(raw_angle, 2);
     float distance = sqrt(dx * dx + dy * dy);
 
     float h = angle * 180;
     float l = distance * 2 / sqrt(rows * rows + cols * cols);
-    l = 0.3;
-    return hsl_to_rgb(h, 1, l);
+    l = l / 3.0 + 0.275;
+    // return hsl_to_rgb(h, 1, l);
+
+    return hsl_to_rgb(h, 0.8, l);
 }
 
 void letter_at(int y, int x, letter letter)
